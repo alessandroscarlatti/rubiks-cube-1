@@ -25,6 +25,7 @@
       border: 1px solid black;
       width: 100px;
       height: 100px;
+      table-layout: fixed;
     }
 
     .grid td {
@@ -431,7 +432,7 @@ function parseCubeJsonFromText(text) {
       let value = csvTokens[i].trim();
 
       // eg, "1/someValue", this is a token that belongs to index 1
-      let specificTargetTokenIndexMatch = value.match(/(\d)=(.+)/);
+      let specificTargetTokenIndexMatch = value.match(/(\d)=(.*)/);
 
       if (specificTargetTokenIndexMatch) {
         // there was a specific target index provided, so use that
@@ -541,13 +542,59 @@ function generateCubeFaceHtml(cubeFaceJson) {
 }
 
 function generateBlockFaceHtml(faceId, blockId, blockDetailsText) {
-  let html = `<td id="block-face-${faceId}-${blockId}">`;
+  let html = `<td id="block-face-${faceId}-${blockId}" style="height: 1rem;">`;
 
-  html += blockDetailsText;
+  html += generateBlockFaceContentHtml(blockDetailsText);
 
   html += `</td>`;
 
   return html;
+}
+
+function generateBlockFaceContentHtml(blockDetailsText) {
+  let value = blockDetailsText;
+  let rotationDegrees = 0;
+
+  let blockDetailsRegex = /(.+?)\/(\d+)/
+  let imageStyle = "";
+
+  if (blockDetailsText.match(blockDetailsRegex)) {
+    value = blockDetailsText.match(blockDetailsRegex)[1];
+    rotationDegrees = Number.parseInt(blockDetailsText.match(blockDetailsRegex)[2]);
+  }
+
+  let imageUrl = getImageUrlForId(value);
+
+  if (imageUrl != null) {
+    // an image was found, so do not display the text value
+    // value = "";
+
+    imageStyle = `background: url(${imageUrl}) no-repeat; background-size: contain; transform: rotate(${rotationDegrees}deg); width: 100%; height: 100%;`;
+  } else {
+    // no image was found
+  }
+
+  let valueHtml = `<div style="display: flex; justify-content: center; align-content: center; flex-direction: column; flex-wrap: wrap; width: 100%; height: 100%; font-size: .5rem;">
+    <div style="background: aliceblue; opacity: 75%; line-height: 1rem; border-radius: .25rem; padding: 0 .1rem">
+      <div style="text-align: center;">
+        <div style="line-height: .5rem;">${value}</div>
+      </div>
+      <div style="">
+        <div style="line-height: .5rem;">${rotationDegrees}</div>
+      </div>
+    </div>
+  </div>`
+
+  return `<div style="${imageStyle}">${valueHtml}</div>`
+}
+
+function getImageUrlForId(id) {
+  switch (id) {
+    case "f1":
+      return "https://cdn-icons-png.flaticon.com/512/115/115149.png";
+    default:
+      return null;
+  }
 }
 
 
