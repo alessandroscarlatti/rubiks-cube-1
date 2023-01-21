@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>RubiksCube2</title>
+    <meta charset="UTF-8" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    body {
+      background-color: #f0f0f0;
+    }
+    a {
+      color: #f00;
+    }
+    #info {
+      color: #000000;
+    }
+
+    .grid {
+      /* border-collapse: collapse; */
+      border: 1px solid black;
+      width: 100px;
+      height: 100px;
+    }
+
+    .grid td {
+      border-collapse: collapse;
+      border: 1px solid black;
+      padding: 0em;
+    }
+
+	</style>
+</head>
+
+<body class="container-fluid">
+<div class="row">
+    <div id="controlPanel" class="col">
+        <div class="container-fluid">
+            <div class="row">
+                <textarea id="textAreaJson">asdf</textarea>
+            </div>
+            <div class="row">
+                <button id="btnUpdateCubeFromJson" class="btn btn-primary">Update Cube From JSON</button>
+                <button id="btnUpdateCubeFromCsv" class="btn btn-primary">Update Cube From CSV</button>
+            </div>
+
+
+        </div>
+
+    </div>
+    <div id="renderer1" class="col"></div>
+</div>
+
+
+<!-- Import maps polyfill -->
+<!-- Remove this when import maps will be widely supported -->
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+<script type="importmap">
+	{
+		"imports": {
+			"three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+			"three/addons/": "https://unpkg.com/three@0.148.0/examples/jsm/"
+		}
+	}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import {
+  CSS3DRenderer,
+  CSS3DObject
+} from "three/addons/renderers/CSS3DRenderer.js";
+
+let camera, scene, renderer;
+
+let scene2, renderer2;
+
+let cubeJson = {
+  "faces": [
+    {
+      "id": "f",
+      "faces": [
+        "r3/180",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+      ]
+    },
+    {
+      "id": "b",
+      "faces": [
+        "r2/180",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+      ]
+    },
+    {
+      "id": "l",
+      "faces": [
+        "r2/180",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+      ]
+    },
+    {
+      "id": "r",
+      "faces": [
+        "r2/180",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+      ]
+    },
+    {
+      "id": "u",
+      "faces": [
+        "r2/180",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+      ]
+    },
+    {
+      "id": "d",
+      "faces": [
+        "r2/180",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+      ]
+    }
+  ]
+}
+
+const frustumSize = 500;
+
+init();
+animate();
+initControlPanel();
+syncCubeUiWithCubeJson();
+
+function init() {
+  const aspect = window.innerWidth / window.innerHeight;
+  camera = new THREE.OrthographicCamera(
+    (frustumSize * aspect) / -2,
+    (frustumSize * aspect) / 2,
+    frustumSize / 2,
+    frustumSize / -2,
+    1,
+    1000
+  );
+
+  let initialDistance = 5;
+
+  camera.position.set(-initialDistance, initialDistance, initialDistance);
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf0f0f0);
+
+  scene2 = new THREE.Scene();
+
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    wireframe: true,
+    wireframeLinewidth: 1,
+    side: THREE.DoubleSide
+  });
+
+  let cubeFaceSize = 200;
+
+  // x0
+  createPlane(
+    cubeFaceSize,
+    cubeFaceSize,
+    "red",
+    new THREE.Vector3(-50, 0, 0),
+    new THREE.Euler(0, -90 * THREE.MathUtils.DEG2RAD, 0),
+    "f"
+  );
+
+  // // left2
+  // createPlane(
+  //   100,
+  //   100,
+  //   "blue",
+  //   new THREE.Vector3(-100, 100, 0),
+  //   new THREE.Euler(0, -90 * THREE.MathUtils.DEG2RAD, 0)
+  // );
+
+  // x1
+  createPlane(
+    cubeFaceSize,
+    cubeFaceSize,
+    "pink",
+    new THREE.Vector3(0, 0, 50),
+    new THREE.Euler(0, 0, 0),
+    "r"
+  );
+
+  // x2
+  createPlane(
+    cubeFaceSize,
+    cubeFaceSize,
+    "orange",
+    new THREE.Vector3(50, 0, 0),
+    new THREE.Euler(0, -270 * THREE.MathUtils.DEG2RAD, 0),
+    "b"
+  );
+
+  // x3
+  createPlane(
+    cubeFaceSize,
+    cubeFaceSize,
+    "blue",
+    new THREE.Vector3(-0, 0, -50),
+    new THREE.Euler(0, -180 * THREE.MathUtils.DEG2RAD, 0),
+    "l"
+  );
+
+  // top
+  createPlane(
+    cubeFaceSize,
+    cubeFaceSize,
+    "green",
+    new THREE.Vector3(0, 50, 0),
+    new THREE.Euler(-90 * THREE.MathUtils.DEG2RAD, 0, 0),
+    "u"
+  );
+  // bottom
+  createPlane(
+    cubeFaceSize,
+    cubeFaceSize,
+    "white",
+    new THREE.Vector3(0, -50, 0),
+    new THREE.Euler(-270 * THREE.MathUtils.DEG2RAD, 0, 0),
+    "d"
+  );
+
+  // renderer = new THREE.WebGLRenderer();
+  // renderer.setPixelRatio(window.devicePixelRatio);
+  // renderer.setSize(window.innerWidth, window.innerHeight);
+  // document.body.appendChild(renderer.domElement);
+
+  renderer2 = new CSS3DRenderer();
+  // renderer2.setSize(window.innerWidth, window.innerHeight);
+  renderer2.setSize(500, 500);
+  // renderer2.domElement.style.position = "absolute";
+  // renderer2.domElement.style.top = 0;
+  document.querySelector("#renderer1").appendChild(renderer2.domElement);
+
+  const controls = new OrbitControls(camera, renderer2.domElement);
+  controls.minZoom = 2;
+  controls.maxZoom = 5;
+
+  function createPlane(width, height, cssColor, pos, rot, id) {
+    const element = document.createElement("div");
+    // element.style.width = width + "px";
+    // element.style.height = height + "px";
+    element.style.opacity = 1;
+    element.style.background = cssColor;
+    // element.style.pointerEvents = "auto";
+    element.classList.add("stuff1");
+    element.id = "face-" + id;
+
+    // element.innerHTML = `
+    //   <button onmousedown="console.log('asdf');">qwer</button>
+    // `;
+
+    element.innerHTML = `
+    <table class="grid grid1">
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>2</td>
+        <td class="target">v3</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>2</td>
+        <td>3</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>2</td>
+        <td>3</td>
+      </tr>
+    </tbody>
+  </table>
+    `;
+
+    const object = new CSS3DObject(element);
+    object.position.copy(pos);
+    object.rotation.copy(rot);
+    // object.on("click", () => {
+    //   console.log("click2");
+    // });
+
+    element.parent = object;
+
+    // object.element.addEventListener("mousedown", () => {
+    //   console.log("clicked");
+    // });
+    // object.element.onclick = () => {
+    //   console.log("clicked");
+    // };
+    scene2.add(object);
+
+    const geometry = new THREE.PlaneGeometry(width, height);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.copy(object.position);
+    mesh.rotation.copy(object.rotation);
+    scene2.add(mesh);
+  }
+
+  window.addEventListener("resize", onWindowResize);
+}
+
+function initControlPanel() {
+  document.querySelector("#btnUpdateCubeFromJson").addEventListener("click", () => {
+    updateCubeUiFromJson();
+  })
+
+  document.querySelector("#btnUpdateCubeFromCsv").addEventListener("click", () => {
+    updateCubeUiFromCsv();
+  })
+}
+
+function onWindowResize() {
+  let width = document.querySelector("#renderer1").clientWidth;
+  let height = document.querySelector("#renderer1").clientHeight;
+
+  const aspect = width / height;
+
+  camera.left = (-frustumSize * aspect) / 2;
+  camera.right = (frustumSize * aspect) / 2;
+  camera.top = frustumSize / 2;
+  camera.bottom = -frustumSize / 2;
+
+  camera.updateProjectionMatrix();
+
+  // renderer.setSize(window.innerWidth, window.innerHeight);
+
+  renderer2.setSize(width, height);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  // renderer.render(scene, camera);
+  renderer2.render(scene2, camera);
+}
+
+let exampleCubeJson2 = {
+  faces: [
+    {
+      // content id/rotation
+      id: "f",
+      faces: ["r2/180", "r", "r", "r", "r", "r", "r", "r", "r"]
+    },
+    {
+      // content id/rotation
+      id: "f",
+      faces: ["r2/180", "r", "r", "r", "r", "r", "r", "r", "r"]
+    },
+  ]
+}
+
+function parseCubeJsonFromText(text) {
+  let lines = text.split("\n");
+
+  let cubeJson = {
+    faces: []
+  }
+
+  // eg, f:r2/180,r,r,r,r,r,r,r,r
+
+  for (let line of lines) {
+
+    let lineRegex = /(.+?):(.+)/;
+
+    let id = line.match(lineRegex)[1].trim();
+
+    let csv = line.match(lineRegex)[2];
+    let csvTokens = csv.split(",");
+
+    let faces = ["#", "#", "#", "#", "#", "#", "#", "#", "#"];
+
+    for (let i = 0; i < csvTokens.length; i++) {
+      // eg "someValue", assume the relative index in the csv tokens list
+      let targetIndex = i;
+      let value = csvTokens[i].trim();
+
+      // eg, "1/someValue", this is a token that belongs to index 1
+      let specificTargetTokenIndexMatch = value.match(/(\d)=(.+)/);
+
+      if (specificTargetTokenIndexMatch) {
+        // there was a specific target index provided, so use that
+        targetIndex = Number.parseInt(specificTargetTokenIndexMatch[1]);
+        value = specificTargetTokenIndexMatch[2];
+      }
+
+      faces[targetIndex] = value;
+    }
+
+    cubeJson.faces.push({
+      id: id,
+      faces: faces
+    })
+  }
+
+  return cubeJson;
+}
+
+function updateCubeJson(source, target) {
+  // take each face in the source, and find the corresponding face on the target
+
+  console.log("update cube json (source, target)", source, JSON.parse(JSON.stringify(target)));
+
+  for (let sourceFace of source.faces) {
+    for (let targetFace of target.faces) {
+      if (targetFace.id === sourceFace.id) {
+        updateCubeFaceJson(sourceFace, targetFace);
+        break;
+      }
+    }
+  }
+
+  console.log("updated cube json",  JSON.parse(JSON.stringify(target)));
+}
+
+function updateCubeFaceJson(source, target) {
+    // take each block face in the source, and find the corresponding face on the target
+  for (let i = 0; i < source.faces.length; i++) {
+    if (!source.faces[i].startsWith("#") && !source.faces[i].startsWith("_") ) {
+      // this is not a commented out item,
+      // so do perform the update
+      target.faces[i] = source.faces[i];
+    }
+  }
+}
+
+function updateCubeUiFromJson() {
+  let text = document.querySelector("#textAreaJson").value;
+
+  let newCubeJson = JSON.parse(text);
+
+  updateCubeJson(newCubeJson, cubeJson);
+
+  syncCubeUiWithCubeJson();
+}
+
+function updateCubeUiFromCsv() {
+  let text = document.querySelector("#textAreaJson").value;
+
+  let newCubeJson = parseCubeJsonFromText(text);
+
+  updateCubeJson(newCubeJson, cubeJson);
+
+  syncCubeUiWithCubeJson();
+}
+
+function syncCubeUiWithCubeJson() {
+  updateCubeHtml(cubeJson);
+}
+
+function updateCubeHtml(cubeJson) {
+  console.log("update cube html", cubeJson);
+
+  for (let faceJson of cubeJson.faces) {
+    let cubeFaceHtml = generateCubeFaceHtml(faceJson);
+
+    document.querySelector(`#face-${faceJson.id}`).innerHTML = cubeFaceHtml;
+  }
+}
+
+function generateCubeFaceHtml(cubeFaceJson) {
+
+  let html = `<table class="grid grid1"><tbody>`
+
+  html += `<tr>`
+  for (let i = 0; i < 3; i++) {
+    html += generateBlockFaceHtml(cubeFaceJson.id, i, cubeFaceJson.faces[i])
+  }
+  html += `</tr>`
+
+  html += `<tr>`
+  for (let i = 3; i < 6; i++) {
+    html += generateBlockFaceHtml(cubeFaceJson.id, i, cubeFaceJson.faces[i])
+  }
+  html += `</tr>`
+
+  html += `<tr>`
+  for (let i = 6; i < 9; i++) {
+    html += generateBlockFaceHtml(cubeFaceJson.id, i, cubeFaceJson.faces[i])
+  }
+  html += `</tr>`
+
+  html += `</tbody></table>`
+
+  return html;
+}
+
+function generateBlockFaceHtml(faceId, blockId, blockDetailsText) {
+  let html = `<td id="block-face-${faceId}-${blockId}">`;
+
+  html += blockDetailsText;
+
+  html += `</td>`;
+
+  return html;
+}
+
+
+</script>
+</body>
+
+</html>
