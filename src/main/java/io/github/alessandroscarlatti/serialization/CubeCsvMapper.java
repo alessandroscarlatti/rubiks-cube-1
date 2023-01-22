@@ -76,6 +76,7 @@ public class CubeCsvMapper {
             Block getBlock(int x, int y, int z) {
                 // x, y, z in first quadrant
                 // measured from left, bottom, front corner of cube
+                // ...built this because I might possibly use it in the future...
                 String id = String.join(",", String.valueOf(x), String.valueOf(y), String.valueOf(z));
 
                 return blockMap.computeIfAbsent(id, id1 -> new Block(blockMap.size() + 1 + "/" + id1));
