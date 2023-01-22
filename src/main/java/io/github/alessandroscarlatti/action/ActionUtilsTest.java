@@ -29,6 +29,9 @@ public class ActionUtilsTest {
 
             RenderUtils.renderCube(cube);
 
+            // this should fail right now...due to hack move
+            CubeValidator.validateCube(cube);
+
             System.out.println("done");
         }
     }
