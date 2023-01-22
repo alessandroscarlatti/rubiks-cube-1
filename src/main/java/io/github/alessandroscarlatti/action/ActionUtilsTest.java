@@ -11,12 +11,12 @@ public class ActionUtilsTest {
     public static class Test1 {
         public static void main(String[] args) {
             Cube cube = CubeCsvMapper.parseCube("""
-                f:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
-                b:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
-                l:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
-                r:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
-                u:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
-                d:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
+                f:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+                b:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+                l:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+                r:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+                u:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+                d:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
                     """);
 
             RenderUtils.renderCube(cube);

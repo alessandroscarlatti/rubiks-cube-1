@@ -66,12 +66,12 @@
       <div id="renderer1"></div>
     </div>
   </div>
-  <template id="templateCubeCsv">f:s/90,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-    b:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-    l:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-    r:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-    u:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-    d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
+  <template id="templateCubeCsv">f:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+b:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+l:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+r:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+u:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90
+d:e/270,s/90,c/180,c/270,s/90,c/90,c/0,s/90,e/90</template>
 
 
   <!-- Import maps polyfill -->
@@ -291,7 +291,7 @@
         cubeFaceSize,
         "white",
         new THREE.Vector3(0, -50, 0),
-        new THREE.Euler(-270 * THREE.MathUtils.DEG2RAD, 0, 0),
+        new THREE.Euler(-270 * THREE.MathUtils.DEG2RAD, 0, 90 * THREE.MathUtils.DEG2RAD),
         "d"
       );
 
@@ -583,14 +583,14 @@
         }
         case "d": {
           cubeFaceJson.faces = [
-            ...cubeFaceJson.faces.slice(0, 3),
-            ...cubeFaceJson.faces.slice(3, 6),
-            ...cubeFaceJson.faces.slice(6, 9),
+            ...cubeFaceJson.faces.slice(6, 9).reverse(),
+            ...cubeFaceJson.faces.slice(3, 6).reverse(),
+            ...cubeFaceJson.faces.slice(0, 3).reverse(),
           ]
           indexes = [
-            ...indexes.slice(0, 3),
-            ...indexes.slice(3, 6),
             ...indexes.slice(6, 9),
+            ...indexes.slice(3, 6),
+            ...indexes.slice(0, 3),
           ]
           break;
         }
@@ -728,7 +728,7 @@
         case "u":
           return "";
         case "d":
-          return "";
+          return "scaleX(-1)";
         case "l":
           return "scaleX(-1)";
         case "r":
