@@ -21,7 +21,7 @@ public class CubeCsvMapper {
 
         Cube cube = parseCube(csvLinesIn);
 
-        String csvLinesOut = getCubeCsv(cube);
+        String csvLinesOut = getCubeCsv2(cube);
 
         System.out.println(csvLinesOut);
     }
@@ -58,10 +58,18 @@ public class CubeCsvMapper {
 
                 // populate the face (i)
                 cube.cubeFaces.get(facePosition).blocks[i].faces.put(facePosition, new BlockFace(facePosition, faceType, rotation));
+
+                int[] coord2d = getCoord2dFromIndex(i);
+
+                cube.getBlockFrom2d(facePosition, coord2d[0], coord2d[1]).faces.put(facePosition, new BlockFace(facePosition, faceType, rotation));
             }
         }
 
         return cube;
+    }
+
+    private static int[] getCoord2dFromIndex(int index) {
+        return new int[]{index / 3, index % 3};
     }
 
     private static Cube getBlankCube() {
@@ -73,24 +81,24 @@ public class CubeCsvMapper {
                 return blockMap.computeIfAbsent(id, id1 -> new Block(blockMap.size() + 1 + "/" + id1));
             }
 
-            Block getBlock(int x, int y, int z) {
+            Block getBlock(int[] coord3d) {
                 // x, y, z in first quadrant
                 // measured from left, bottom, front corner of cube
                 // ...built this because I might possibly use it in the future...
-                String id = String.join(",", String.valueOf(x), String.valueOf(y), String.valueOf(z));
 
-                return blockMap.computeIfAbsent(id, id1 -> new Block(blockMap.size() + 1 + "/" + id1));
+                return blockMap.computeIfAbsent(Block.generateId(coord3d), id1 -> new Block(coord3d));
             }
 
             void validateBlockCount() {
                 int expectedCount = 26;
                 if (blockMap.size() != expectedCount) {
-                    throw new IllegalStateException("block map expected " + expectedCount +", but was " + blockMap);
+                    throw new IllegalStateException("block map expected " + expectedCount +", but was " + blockMap.size());
                 }
             }
         }
 
-        BlockFactory blockFactory = new BlockFactory();
+        BlockFactory blockFactory1 = new BlockFactory();
+        BlockFactory blockFactory2 = new BlockFactory();
 
         Cube cube = new Cube();
 
@@ -107,67 +115,82 @@ public class CubeCsvMapper {
         // D = 9
         int blockCount = 9 + 8 + 9;
 
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[0] = blockFactory.getBlock("F1/L1/U1");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[1] = blockFactory.getBlock("F1/L0/U1");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[2] = blockFactory.getBlock("F1/R1/U1");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[3] = blockFactory.getBlock("F1/L1/U0");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[4] = blockFactory.getBlock("F1/L0/U0");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[5] = blockFactory.getBlock("F1/R1/U0");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[6] = blockFactory.getBlock("F1/L1/D1");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[7] = blockFactory.getBlock("F1/L0/D1");
-        cube.cubeFaces.get(FacePosition.FRONT).blocks[8] = blockFactory.getBlock("F1/R1/D1");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[0] = blockFactory1.getBlock("F1/L1/U1");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[1] = blockFactory1.getBlock("F1/L0/U1");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[2] = blockFactory1.getBlock("F1/R1/U1");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[3] = blockFactory1.getBlock("F1/L1/U0");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[4] = blockFactory1.getBlock("F1/L0/U0");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[5] = blockFactory1.getBlock("F1/R1/U0");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[6] = blockFactory1.getBlock("F1/L1/D1");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[7] = blockFactory1.getBlock("F1/L0/D1");
+        cube.cubeFaces.get(FacePosition.FRONT).blocks[8] = blockFactory1.getBlock("F1/R1/D1");
 
-        cube.cubeFaces.get(FacePosition.BACK).blocks[0] = blockFactory.getBlock("B1/R1/U1");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[1] = blockFactory.getBlock("B1/L0/U1");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[2] = blockFactory.getBlock("B1/L1/U1");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[3] = blockFactory.getBlock("B1/R1/U0");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[4] = blockFactory.getBlock("B1/L0/U0");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[5] = blockFactory.getBlock("B1/L1/U0");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[6] = blockFactory.getBlock("B1/R1/D1");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[7] = blockFactory.getBlock("B1/L0/D1");
-        cube.cubeFaces.get(FacePosition.BACK).blocks[8] = blockFactory.getBlock("B1/L1/D1");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[0] = blockFactory1.getBlock("B1/R1/U1");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[1] = blockFactory1.getBlock("B1/L0/U1");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[2] = blockFactory1.getBlock("B1/L1/U1");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[3] = blockFactory1.getBlock("B1/R1/U0");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[4] = blockFactory1.getBlock("B1/L0/U0");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[5] = blockFactory1.getBlock("B1/L1/U0");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[6] = blockFactory1.getBlock("B1/R1/D1");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[7] = blockFactory1.getBlock("B1/L0/D1");
+        cube.cubeFaces.get(FacePosition.BACK).blocks[8] = blockFactory1.getBlock("B1/L1/D1");
 
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[0] = blockFactory.getBlock("B1/L1/U1");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[1] = blockFactory.getBlock("F0/L1/U1");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[2] = blockFactory.getBlock("F1/L1/U1");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[3] = blockFactory.getBlock("B1/L1/U0");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[4] = blockFactory.getBlock("F0/L1/U0");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[5] = blockFactory.getBlock("F1/L1/U0");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[6] = blockFactory.getBlock("B1/L1/D1");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[7] = blockFactory.getBlock("F0/L1/D1");
-        cube.cubeFaces.get(FacePosition.LEFT).blocks[8] = blockFactory.getBlock("F1/L1/D1");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[0] = blockFactory1.getBlock("B1/L1/U1");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[1] = blockFactory1.getBlock("F0/L1/U1");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[2] = blockFactory1.getBlock("F1/L1/U1");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[3] = blockFactory1.getBlock("B1/L1/U0");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[4] = blockFactory1.getBlock("F0/L1/U0");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[5] = blockFactory1.getBlock("F1/L1/U0");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[6] = blockFactory1.getBlock("B1/L1/D1");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[7] = blockFactory1.getBlock("F0/L1/D1");
+        cube.cubeFaces.get(FacePosition.LEFT).blocks[8] = blockFactory1.getBlock("F1/L1/D1");
 
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[0] = blockFactory.getBlock("F1/R1/U1");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[1] = blockFactory.getBlock("F0/R1/U1");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[2] = blockFactory.getBlock("B1/R1/U1");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[3] = blockFactory.getBlock("F1/R1/U0");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[4] = blockFactory.getBlock("F0/R1/U0");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[5] = blockFactory.getBlock("B1/R1/U0");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[6] = blockFactory.getBlock("F1/R1/D1");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[7] = blockFactory.getBlock("F0/R1/D1");
-        cube.cubeFaces.get(FacePosition.RIGHT).blocks[8] = blockFactory.getBlock("B1/R1/D1");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[0] = blockFactory1.getBlock("F1/R1/U1");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[1] = blockFactory1.getBlock("F0/R1/U1");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[2] = blockFactory1.getBlock("B1/R1/U1");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[3] = blockFactory1.getBlock("F1/R1/U0");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[4] = blockFactory1.getBlock("F0/R1/U0");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[5] = blockFactory1.getBlock("B1/R1/U0");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[6] = blockFactory1.getBlock("F1/R1/D1");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[7] = blockFactory1.getBlock("F0/R1/D1");
+        cube.cubeFaces.get(FacePosition.RIGHT).blocks[8] = blockFactory1.getBlock("B1/R1/D1");
 
-        cube.cubeFaces.get(FacePosition.UP).blocks[0] = blockFactory.getBlock("F1/L1/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[1] = blockFactory.getBlock("F0/L1/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[2] = blockFactory.getBlock("B1/L1/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[3] = blockFactory.getBlock("F1/L0/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[4] = blockFactory.getBlock("F0/L0/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[5] = blockFactory.getBlock("B1/L0/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[6] = blockFactory.getBlock("F1/R1/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[7] = blockFactory.getBlock("F0/R1/U1");
-        cube.cubeFaces.get(FacePosition.UP).blocks[8] = blockFactory.getBlock("B1/R1/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[0] = blockFactory1.getBlock("F1/L1/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[1] = blockFactory1.getBlock("F0/L1/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[2] = blockFactory1.getBlock("B1/L1/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[3] = blockFactory1.getBlock("F1/L0/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[4] = blockFactory1.getBlock("F0/L0/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[5] = blockFactory1.getBlock("B1/L0/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[6] = blockFactory1.getBlock("F1/R1/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[7] = blockFactory1.getBlock("F0/R1/U1");
+        cube.cubeFaces.get(FacePosition.UP).blocks[8] = blockFactory1.getBlock("B1/R1/U1");
 
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[0] = blockFactory.getBlock("F1/R1/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[1] = blockFactory.getBlock("F0/R1/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[2] = blockFactory.getBlock("B1/R1/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[3] = blockFactory.getBlock("F1/L0/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[4] = blockFactory.getBlock("F0/L0/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[5] = blockFactory.getBlock("B1/L0/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[6] = blockFactory.getBlock("F1/L1/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[7] = blockFactory.getBlock("F0/L1/D1");
-        cube.cubeFaces.get(FacePosition.DOWN).blocks[8] = blockFactory.getBlock("B1/L1/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[0] = blockFactory1.getBlock("F1/R1/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[1] = blockFactory1.getBlock("F0/R1/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[2] = blockFactory1.getBlock("B1/R1/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[3] = blockFactory1.getBlock("F1/L0/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[4] = blockFactory1.getBlock("F0/L0/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[5] = blockFactory1.getBlock("B1/L0/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[6] = blockFactory1.getBlock("F1/L1/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[7] = blockFactory1.getBlock("F0/L1/D1");
+        cube.cubeFaces.get(FacePosition.DOWN).blocks[8] = blockFactory1.getBlock("B1/L1/D1");
 
-        blockFactory.validateBlockCount();
+
+        for (int x = 0; x < 3; x++) {
+            for (int y = 0; y < 3; y++) {
+                for (int z = 0; z < 3; z++) {
+                    if (x == 1 && y == 1 && z == 1) {
+                        // skip the center
+                        continue;
+                    }
+
+                    cube.blocks[x][y][z] = blockFactory2.getBlock(new int[]{x, y, z});
+                }
+            }
+        }
+
+        blockFactory1.validateBlockCount();
+        blockFactory2.validateBlockCount();
 
         return cube;
     }
@@ -181,6 +204,29 @@ public class CubeCsvMapper {
 
             for (BlockFace blockFace : cubeFaceEntry.getValue().getBlockFaces()) {
                 csv.add(blockFace.faceType + "/" + blockFace.rotation.getDegrees());
+            }
+
+            lines.add(csv.toString());
+        }
+
+        return lines.toString();
+    }
+
+    public static String getCubeCsv2(Cube cube) {
+
+        StringJoiner lines = new StringJoiner("\n");
+
+        for (Map.Entry<FacePosition, CubeFace> cubeFaceEntry : cube.cubeFaces.entrySet()) {
+            StringJoiner csv = new StringJoiner(",", cubeFaceEntry.getKey().getCode() + ":", "");
+
+            FacePosition facePosition = cubeFaceEntry.getKey();
+            Block[][] blocks = cube.getCubeFaceBlocks(facePosition);
+
+            for (int x = 0; x < 3; x++) {
+                for (int y = 0; y < 3; y++) {
+                    BlockFace blockFace = blocks[x][y].faces.get(facePosition);
+                    csv.add(blockFace.faceType + "/" + blockFace.rotation.getDegrees());
+                }
             }
 
             lines.add(csv.toString());

@@ -67,11 +67,11 @@
     </div>
   </div>
   <template id="templateCubeCsv">f:s/90,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-b:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-l:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-r:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-u:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
-d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
+    b:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
+    l:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
+    r:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
+    u:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90
+    d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
 
 
   <!-- Import maps polyfill -->
@@ -282,7 +282,7 @@ d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
         cubeFaceSize,
         "green",
         new THREE.Vector3(0, 50, 0),
-        new THREE.Euler(-90 * THREE.MathUtils.DEG2RAD, 0, 0),
+        new THREE.Euler(-90 * THREE.MathUtils.DEG2RAD, 0, 270 * THREE.MathUtils.DEG2RAD),
         "u"
       );
       // bottom
@@ -304,7 +304,7 @@ d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
       // renderer2.setSize(window.innerWidth, window.innerHeight);
       // renderer2.setSize(500, 500);
       renderer2.setSize(
-        document.querySelector("#renderer1").clientWidth, 
+        document.querySelector("#renderer1").clientWidth,
         document.querySelector("#renderer1").clientHeight);
       // renderer2.domElement.style.position = "absolute";
       // renderer2.domElement.style.top = 0;
@@ -544,21 +544,79 @@ d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
 
       let html = `<table class="grid grid1"><tbody>`
 
+      // rotate the list as needed, based on the face
+      let indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+      switch (cubeFaceJson.id) {
+        case "f":
+        case "r": {
+          // no modification needed
+          break;
+        }
+        case "b":
+        case "l": {
+          // need to reverse each row
+          cubeFaceJson.faces = [
+            ...cubeFaceJson.faces.slice(0, 3),
+            ...cubeFaceJson.faces.slice(3, 6),
+            ...cubeFaceJson.faces.slice(6, 9),
+          ]
+          indexes = [
+            ...indexes.slice(0, 3).reverse(),
+            ...indexes.slice(3, 6).reverse(),
+            ...indexes.slice(6, 9).reverse(),
+          ]
+          break;
+        }
+        case "u": {
+          cubeFaceJson.faces = [
+            ...cubeFaceJson.faces.slice(0, 3),
+            ...cubeFaceJson.faces.slice(3, 6),
+            ...cubeFaceJson.faces.slice(6, 9),
+          ]
+          indexes = [
+            ...indexes.slice(0, 3),
+            ...indexes.slice(3, 6),
+            ...indexes.slice(6, 9),
+          ]
+          break;
+        }
+        case "d": {
+          cubeFaceJson.faces = [
+            ...cubeFaceJson.faces.slice(0, 3),
+            ...cubeFaceJson.faces.slice(3, 6),
+            ...cubeFaceJson.faces.slice(6, 9),
+          ]
+          indexes = [
+            ...indexes.slice(0, 3),
+            ...indexes.slice(3, 6),
+            ...indexes.slice(6, 9),
+          ]
+          break;
+        }
+      }
+
+
+      // render 
+
       html += `<tr>`
-      for (let i = 0; i < 3; i++) {
-        html += generateBlockFaceHtml(cubeFaceJson.id, i, cubeFaceJson.faces[i])
+      for (let i = 6; i < 9; i++) {
+        let index = indexes[i];
+        html += generateBlockFaceHtml(cubeFaceJson.id, index, cubeFaceJson.faces[index])
       }
       html += `</tr>`
 
       html += `<tr>`
       for (let i = 3; i < 6; i++) {
-        html += generateBlockFaceHtml(cubeFaceJson.id, i, cubeFaceJson.faces[i])
+        let index = indexes[i];
+        html += generateBlockFaceHtml(cubeFaceJson.id, index, cubeFaceJson.faces[index])
       }
       html += `</tr>`
 
       html += `<tr>`
-      for (let i = 6; i < 9; i++) {
-        html += generateBlockFaceHtml(cubeFaceJson.id, i, cubeFaceJson.faces[i])
+      for (let i = 0; i < 3; i++) {
+        let index = indexes[i];
+        html += generateBlockFaceHtml(cubeFaceJson.id, index, cubeFaceJson.faces[index])
       }
       html += `</tr>`
 
@@ -570,16 +628,16 @@ d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
     function generateBlockFaceHtml(faceId, blockId, blockDetailsText) {
       let html = `<td id="block-face-${faceId}-${blockId}" style="height: 1rem;">`;
 
-      let blockFaceId = faceId + blockId;
-
-      html += generateBlockFaceContentHtml(blockFaceId, blockDetailsText);
+      html += generateBlockFaceContentHtml(faceId, blockId, blockDetailsText);
 
       html += `</td>`;
 
       return html;
     }
 
-    function generateBlockFaceContentHtml(blockFaceId, blockDetailsText) {
+    function generateBlockFaceContentHtml(faceId, blockId, blockDetailsText) {
+      let blockFaceId = faceId + blockId;
+
       let value = blockDetailsText;
       let rotationDegrees = 0;
 
@@ -591,13 +649,17 @@ d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
         rotationDegrees = Number.parseInt(blockDetailsText.match(blockDetailsRegex)[2]);
       }
 
+      rotationDegrees = calculateCssRotationDegrees(faceId, rotationDegrees);
+
+      let cssScale = calculateCssScale(faceId, rotationDegrees);
+
       let imageUrl = getImageUrlForId(value);
 
       if (imageUrl != null) {
         // an image was found, so do not display the text value
         // value = "";
 
-        imageStyle = `background: url(${imageUrl}) no-repeat; background-size: contain; transform: rotate(${rotationDegrees}deg); width: 100%; height: 100%;`;
+        imageStyle = `background: url(${imageUrl}) no-repeat; background-size: contain; transform: ${cssScale} rotate(${rotationDegrees}deg); width: 100%; height: 100%;`;
       } else {
         // no image was found
       }
@@ -618,7 +680,7 @@ d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
         <div style="${imageStyle}position: absolute; z-index: 100;"></div>
         ${valueHtml}
       </div>`
-      
+
     }
 
     function getImageUrlForId(id) {
@@ -635,6 +697,42 @@ d:e/270,s/90,c/90,c/0,s/90,c/180,c/270,s/90,e/90</template>
           return "./Shape4_Blank.png";
         default:
           return null;
+      }
+    }
+
+    function calculateCssRotationDegrees(faceId, degrees) {
+      switch (faceId) {
+        case "f":
+        case "r":
+          return degrees;
+        case "b":
+          return degrees;
+        case "u":
+          return degrees;
+        case "d":
+          return degrees;
+        case "l":
+          return degrees;
+        case "r":
+          return degrees;
+      }
+    }
+
+    function calculateCssScale(faceId, degrees) {
+      switch (faceId) {
+        case "f":
+        case "r":
+          return "";
+        case "b":
+          return "scaleX(-1)";
+        case "u":
+          return "";
+        case "d":
+          return "";
+        case "l":
+          return "scaleX(-1)";
+        case "r":
+          return "";
       }
     }
 
