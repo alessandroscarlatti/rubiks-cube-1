@@ -5,11 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 
 public class CubeCsvMapper {
 
     public static void main(String[] args) {
-        String csvLines = """
+        String csvLinesIn = """
                 f:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
                 b:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
                 l:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
@@ -18,9 +19,11 @@ public class CubeCsvMapper {
                 d:e/270,s/90,c/90,c,s/90,c/180,c/270,s/90,e/90
                 """.stripIndent();
 
-        Cube cube = parseCube(csvLines);
+        Cube cube = parseCube(csvLinesIn);
 
-        System.out.println(cube);
+        String csvLinesOut = getCubeCsv(cube);
+
+        System.out.println(csvLinesOut);
     }
 
     public static Cube parseCube(String csvLines) {
@@ -67,6 +70,14 @@ public class CubeCsvMapper {
             final Map<String, Block> blockMap = new HashMap<>();
 
             Block getBlock(String id) {
+                return blockMap.computeIfAbsent(id, id1 -> new Block(blockMap.size() + 1 + "/" + id1));
+            }
+
+            Block getBlock(int x, int y, int z) {
+                // x, y, z in first quadrant
+                // measured from left, bottom, front corner of cube
+                String id = String.join(",", String.valueOf(x), String.valueOf(y), String.valueOf(z));
+
                 return blockMap.computeIfAbsent(id, id1 -> new Block(blockMap.size() + 1 + "/" + id1));
             }
 
@@ -158,6 +169,23 @@ public class CubeCsvMapper {
         blockFactory.validateBlockCount();
 
         return cube;
+    }
+
+    public static String getCubeCsv(Cube cube) {
+
+        StringJoiner lines = new StringJoiner("\n");
+
+        for (Map.Entry<FacePosition, CubeFace> cubeFaceEntry : cube.cubeFaces.entrySet()) {
+            StringJoiner csv = new StringJoiner(",", cubeFaceEntry.getKey().getCode() + ":", "");
+
+            for (BlockFace blockFace : cubeFaceEntry.getValue().getBlockFaces()) {
+                csv.add(blockFace.faceType + "/" + blockFace.rotation.getDegrees());
+            }
+
+            lines.add(csv.toString());
+        }
+
+        return lines.toString();
     }
 
 

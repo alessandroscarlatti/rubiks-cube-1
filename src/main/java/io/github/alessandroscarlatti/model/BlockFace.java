@@ -2,9 +2,9 @@ package io.github.alessandroscarlatti.model;
 
 public class BlockFace {
 
-    private FacePosition facePosition;
-    private final String faceType;
-    private Rotation rotation;
+    public FacePosition facePosition;
+    public final String faceType;
+    public Rotation rotation;
 
     public BlockFace(FacePosition facePosition, String faceType, Rotation rotation) {
         this.facePosition = facePosition;
